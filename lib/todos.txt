@@ -1,0 +1,2 @@
+# TODO logindagi inputlarni validadsiya qilish
+# TODO username va parolni to'g'ri tekshirish

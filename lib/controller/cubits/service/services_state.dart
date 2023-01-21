@@ -12,6 +12,20 @@ class ServicesLoaded extends ServicesState {
   ServicesLoaded({required this.services});
 }
 
+class FilteresUserServices extends ServicesState {
+  final List<Service> services;
+  FilteresUserServices({required this.services});
+}
+
+class ServicesAdded extends ServicesState {
+  final Service service;
+  ServicesAdded({required this.service});
+}
+
+class ServicesDeleted extends ServicesState {}
+
+class ServicesUpdated extends ServicesState {}
+
 class ServicesError extends ServicesState {
   final String errorMessage;
   ServicesError({required this.errorMessage});

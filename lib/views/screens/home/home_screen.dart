@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import '../../pages/pages.dart';
 
@@ -83,10 +82,10 @@ class _HomeScreenState extends State<HomeScreen>
           child: TabBarView(
             viewportFraction: 1,
             controller: _tabController,
-            children: [
-              const ServicePage(),
+            children: const [
+              ServicePage(),
               AddAdvPage(),
-              const ManagePage(),
+              ManagePage(),
             ],
           ),
         ),

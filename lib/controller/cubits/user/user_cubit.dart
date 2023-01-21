@@ -103,12 +103,11 @@ class UserCubit extends Cubit<UserState> {
       userServices.add(
         Service(
           id: service['id'],
-          numberOfPeople: 0,
           fromWhere: service['from_where'],
           toWhere: service['to_where'],
           carType: service['car_type'],
-          createdOn: "",
-          updatedOn: "",
+          servicePrice: service['service_price'],
+          phoneNumber: service['phone_number'],
           usedId: service['user']['id'],
           firstName: service['user']['first_name'],
           leavingTime: service['leaving_time'],
@@ -116,6 +115,11 @@ class UserCubit extends Cubit<UserState> {
       );
     }
     return userServices;
+  }
+
+  Service getService({required int serviceId}) {
+    List<Service> services = userServices;
+    return services.firstWhere((element) => element.id == serviceId);
   }
 }
 

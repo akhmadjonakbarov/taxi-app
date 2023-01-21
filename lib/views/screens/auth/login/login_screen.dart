@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../controller/cubits/user/user_cubit.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -100,26 +101,27 @@ class LoginScreen extends StatelessWidget {
                       width: 135,
                       height: 50,
                       child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(),
-                          onPressed: () {
-                            _submit(context);
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Kirish".toUpperCase(),
-                                style: GoogleFonts.nunito(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white),
-                              ),
-                              const Icon(
-                                CupertinoIcons.arrow_right,
-                                color: Colors.white,
-                              )
-                            ],
-                          )),
+                        style: ElevatedButton.styleFrom(),
+                        onPressed: () {
+                          _submit(context);
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Kirish".toUpperCase(),
+                              style: GoogleFonts.nunito(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white),
+                            ),
+                            const Icon(
+                              CupertinoIcons.arrow_right,
+                              color: Colors.white,
+                            )
+                          ],
+                        ),
+                      ),
                     ),
                   )
                 ],

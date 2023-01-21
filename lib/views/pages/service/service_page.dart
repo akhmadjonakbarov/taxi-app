@@ -29,80 +29,99 @@ class _ServicePageState extends State<ServicePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: BlocBuilder<ServicesCubit, ServicesState>(
-              builder: (context, state) {
-                if (state is ServicesInitial) {
-                  return const _ServiceFilterForm();
-                } else if (state is ServicesLoading) {
-                  return const CircularProgressIndicator();
-                } else if (state is ServicesLoaded) {
-                  if (state.services.isNotEmpty) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              splashRadius: 18,
-                              onPressed: () {
-                                BlocProvider.of<ServicesCubit>(context)
-                                    .clearService();
-                              },
-                              icon: const Icon(
-                                CupertinoIcons.back,
+            child: BlocListener<ServicesCubit, ServicesState>(
+              listener: (context, state) {
+                if (state is ServicesLoaded) {
+                  if (state.services.isEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Bu so'ro'v bo'yicha e'lonlar topilmadi.\nIltimos qaytadan urunib ko'ring,",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.nunito(
+                                  fontSize: 20,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            itemCount: state.services.length,
-                            itemBuilder: (context, index) {
-                              Service service = state.services[index];
-                              return ServiceItem(service: service);
-                            },
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  BlocProvider.of<ServicesCubit>(context)
+                                      .clearService();
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  "Qayta urunish",
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
-                        ),
-                      ],
-                    );
-                  } else {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Bu so'ro'v bo'yicha e'lonlar topilmadi.\nIltimos qaytadan urunib ko'ring,",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.nunito(
-                            fontSize: 20,
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            BlocProvider.of<ServicesCubit>(context)
-                                .clearService();
-                          },
-                          child: Text(
-                            "Qayta urunish",
-                            style: GoogleFonts.nunito(
-                              fontSize: 18,
-                            ),
-                          ),
-                        )
-                      ],
+                        );
+                      },
                     );
                   }
-                } else if (state is ServicesError) {
-                  return Center(
-                      child: Container(
-                    decoration: const BoxDecoration(),
-                    child: Text(state.errorMessage),
-                  ));
-                } else {
-                  return Container();
                 }
               },
+              child: BlocBuilder<ServicesCubit, ServicesState>(
+                builder: (context, state) {
+                  if (state is ServicesLoading) {
+                    return const CircularProgressIndicator();
+                  } else if (state is ServicesLoaded) {
+                    if (state.services.isNotEmpty) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                splashRadius: 18,
+                                onPressed: () {
+                                  BlocProvider.of<ServicesCubit>(context)
+                                      .clearService();
+                                },
+                                icon: const Icon(
+                                  CupertinoIcons.back,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              itemCount: state.services.length,
+                              itemBuilder: (context, index) {
+                                Service service = state.services[index];
+                                return ServiceItem(service: service);
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      return const _ServiceFilterForm();
+                    }
+                  } else if (state is ServicesError) {
+                    return Center(
+                        child: Container(
+                      decoration: const BoxDecoration(),
+                      child: Text(state.errorMessage),
+                    ));
+                  } else {
+                    return const _ServiceFilterForm();
+                  }
+                },
+              ),
             ),
           ),
         ],
@@ -112,7 +131,7 @@ class _ServicePageState extends State<ServicePage> {
 }
 
 class _ServiceFilterForm extends StatefulWidget {
-  const _ServiceFilterForm({super.key});
+  const _ServiceFilterForm();
 
   @override
   State<_ServiceFilterForm> createState() => _ServiceFilterFormState();

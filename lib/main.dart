@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'controller/cubits/service/services_cubit.dart';
 import 'controller/cubits/user/user_cubit.dart';
@@ -7,9 +8,14 @@ import 'views/screens/screens.dart';
 
 void main() => runApp(const MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -31,8 +37,21 @@ class MyApp extends StatelessWidget {
               return Scaffold(
                 body: Center(
                   child: Container(
-                      decoration: const BoxDecoration(),
-                      child: const CircularProgressIndicator()),
+                    decoration: const BoxDecoration(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          "Loading...",
+                          style: GoogleFonts.nunito(fontSize: 25),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
               );
             } else if (state is UserLogin) {
@@ -44,6 +63,7 @@ class MyApp extends StatelessWidget {
                 ),
               );
             } else {
+              BlocProvider.of<UserCubit>(context).autoLogin();
               return LoginScreen();
             }
           },

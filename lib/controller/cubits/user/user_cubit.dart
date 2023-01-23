@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taxi_app/models/models.dart';
 
 import '../../api/constants.dart';
@@ -14,6 +15,7 @@ part 'user_state.dart';
 
 class UserCubit extends Cubit<UserState> {
   UserCubit() : super(UserInitial());
+  String? _token;
 
   Map<String, String> headers = {"content-type": "application/json"};
   late User _user;
@@ -31,23 +33,29 @@ class UserCubit extends Cubit<UserState> {
         http.Response response =
             await http.post(url, body: data, headers: headers);
         emit(UserLoading());
-        updateCookie(response);
+        print("Status Code:${response.statusCode}");
         final resData = await jsonDecode(response.body);
-        String accessToken = await resData["user_info"]["access"];
+        _token =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0NDk0NjgzLCJpYXQiOjE2NzQ0OTQ2NzMsImp0aSI6ImRlMjBkMDkzNTVmNzQ4ZGZiNDYxZDc0ZDQwNWE5Y2U0IiwidXNlcl9pZCI6MiwiZmlyc3RfbmFtZSI6IkFraG1hZGpvbiIsImxhc3RfbmFtZSI6IkFrYmFyb3YiLCJwaG9uZV9udW1iZXIiOiI5MzE2MzQ2MDAifQ.ttKCmsmdtYT-Rb7uAou1su1NC-EcvdPoZ_LW1pXni_M";
         http.Response resUser = await http.get(
           getUserUrl,
-          headers: {"Authorization": "Bearer $accessToken"},
+          headers: {"Authorization": "Bearer $_token"},
         );
+        print(resUser.statusCode);
+        print(resUser.body);
         final userData = jsonDecode(resUser.body);
         _user = User(
           id: userData["id"],
           firstName: userData["first_name"],
           lastName: userData["last_name"],
           phoneNumber: userData["phone_number"],
-          token: accessToken,
+          token: _token!,
           services: userData["services"],
         );
         emit(UserLogin(user: _user));
+        final prefs = await SharedPreferences.getInstance();
+
+        prefs.setString('token', _token!);
       } catch (e) {
         emit(
           UserError(errorMsg: e.toString()),
@@ -56,7 +64,35 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
+  Future<void> autoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    String userToken = "";
+    final getUserUrl =
+        Uri.parse(ApiConstants.baseUrl + ApiConstants.userEndPoint);
+    if (prefs.containsKey("token")) {
+      userToken = prefs.getString("token")!;
+      http.Response resUser = await http.get(
+        getUserUrl,
+        headers: {"Authorization": "Bearer $userToken"},
+      );
+      final userData = jsonDecode(resUser.body);
+      _user = User(
+        id: userData["id"],
+        firstName: userData["first_name"],
+        lastName: userData["last_name"],
+        phoneNumber: userData["phone_number"],
+        token: userToken,
+        services: userData["services"],
+      );
+      emit(UserLogin(user: _user));
+    }
+  }
+
   Future<void> userLogOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey("token")) {
+      prefs.setString("token", "");
+    }
     try {
       _user = User(
         id: 0,
@@ -66,18 +102,11 @@ class UserCubit extends Cubit<UserState> {
         token: "",
         services: [],
       );
+      _token = "";
+
       emit(UserLogout(user: _user));
     } catch (e) {
       emit(UserError(errorMsg: e.toString()));
-    }
-  }
-
-  void updateCookie(http.Response response) {
-    String? rawCookie = response.headers['set-cookie'];
-    if (rawCookie != null) {
-      int index = rawCookie.indexOf(';');
-      headers['cookie'] =
-          (index == -1) ? rawCookie : rawCookie.substring(0, index);
     }
   }
 
@@ -125,5 +154,5 @@ class UserCubit extends Cubit<UserState> {
 
 void main(List<String> args) {
   UserCubit userCubit = UserCubit();
-  userCubit.userLogin(username: "ali@gmail.com", password: "124");
+  userCubit.userLogin(username: "931634600", password: "322");
 }

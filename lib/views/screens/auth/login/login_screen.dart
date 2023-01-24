@@ -7,14 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../controller/cubits/user/user_cubit.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
+  final String routeName = "/login-screen";
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
   final _loginKey = GlobalKey<FormState>();
 
   String phoneNumber = "";

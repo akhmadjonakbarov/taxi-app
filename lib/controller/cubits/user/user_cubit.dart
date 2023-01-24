@@ -20,6 +20,10 @@ class UserCubit extends Cubit<UserState> {
   Map<String, String> headers = {"content-type": "application/json"};
   late User _user;
 
+  bool get isAuth {
+    return _token != null;
+  }
+
   Future<void> userLogin(
       {required String username, required String password}) async {
     final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.loginEndPoint);
@@ -33,16 +37,13 @@ class UserCubit extends Cubit<UserState> {
         http.Response response =
             await http.post(url, body: data, headers: headers);
         emit(UserLoading());
-        print("Status Code:${response.statusCode}");
         final resData = await jsonDecode(response.body);
-        _token =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0NDk0NjgzLCJpYXQiOjE2NzQ0OTQ2NzMsImp0aSI6ImRlMjBkMDkzNTVmNzQ4ZGZiNDYxZDc0ZDQwNWE5Y2U0IiwidXNlcl9pZCI6MiwiZmlyc3RfbmFtZSI6IkFraG1hZGpvbiIsImxhc3RfbmFtZSI6IkFrYmFyb3YiLCJwaG9uZV9udW1iZXIiOiI5MzE2MzQ2MDAifQ.ttKCmsmdtYT-Rb7uAou1su1NC-EcvdPoZ_LW1pXni_M";
+        _token = resData["user_info"]["access"];
         http.Response resUser = await http.get(
           getUserUrl,
           headers: {"Authorization": "Bearer $_token"},
         );
-        print(resUser.statusCode);
-        print(resUser.body);
+
         final userData = jsonDecode(resUser.body);
         _user = User(
           id: userData["id"],

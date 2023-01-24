@@ -27,47 +27,53 @@ class _MyAppState extends State<MyApp> {
           value: UserCubit(),
         )
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: "Yo'lo'vchi",
-        theme: ThemeData(primarySwatch: Colors.indigo),
-        home: BlocBuilder<UserCubit, UserState>(
-          builder: (context, state) {
-            if (state is UserLoading) {
-              return Scaffold(
-                body: Center(
-                  child: Container(
-                    decoration: const BoxDecoration(),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(
-                          height: 5,
+      child: BlocConsumer<UserCubit, UserState>(
+        listener: (context, state) {},
+        builder: (context, state) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: "Yo'lo'vchi",
+            theme: ThemeData(primarySwatch: Colors.indigo),
+            home: BlocBuilder<UserCubit, UserState>(
+              builder: (context, state) {
+                if (state is UserLoading) {
+                  return Scaffold(
+                    body: Center(
+                      child: Container(
+                        decoration: const BoxDecoration(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              "Loading...",
+                              style: GoogleFonts.nunito(fontSize: 25),
+                            )
+                          ],
                         ),
-                        Text(
-                          "Loading...",
-                          style: GoogleFonts.nunito(fontSize: 25),
-                        )
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            } else if (state is UserLogin) {
-              return const HomeScreen();
-            } else if (state is UserError) {
-              return Scaffold(
-                body: Center(
-                  child: Text(state.errorMsg.toString()),
-                ),
-              );
-            } else {
-              BlocProvider.of<UserCubit>(context).autoLogin();
-              return LoginScreen();
-            }
-          },
-        ),
+                  );
+                } else if (state is UserLogin) {
+                  return const HomeScreen();
+                } else if (state is UserError) {
+                  return Scaffold(
+                    body: Center(
+                      child: Text(state.errorMsg.toString()),
+                    ),
+                  );
+                } else {
+                  BlocProvider.of<UserCubit>(context).autoLogin();
+                  return LoginScreen();
+                }
+              },
+            ),
+            routes: {},
+          );
+        },
       ),
     );
   }

@@ -6,6 +6,8 @@ import '../../pages/pages.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  final String routeName = "/home-screen";
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }

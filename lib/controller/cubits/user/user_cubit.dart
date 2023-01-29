@@ -1,13 +1,10 @@
-// ignore_for_file: prefer_typing_uninitialized_variables
-// ignore_for_file: depend_on_referenced_packages
-
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taxi_app/models/models.dart';
+import '../../../models/models.dart';
 
 import '../../api/constants.dart';
 
@@ -16,47 +13,56 @@ part 'user_state.dart';
 class UserCubit extends Cubit<UserState> {
   UserCubit() : super(UserInitial());
   String? _token;
-
-  Map<String, String> headers = {"content-type": "application/json"};
+  DateTime? _expiryDate;
+  Timer? _autoLogOutTimer;
   late User _user;
 
+  Map<String, String> headers = {"content-type": "application/json"};
+
   bool get isAuth {
-    return _token != null;
+    return token != null;
+  }
+
+  String? get token {
+    if (_expiryDate != null &&
+        _expiryDate!.isAfter(DateTime.now()) &&
+        _token != null) {
+      return _token;
+    }
+    return null;
   }
 
   Future<void> userLogin(
       {required String username, required String password}) async {
     final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.loginEndPoint);
-    final getUserUrl =
-        Uri.parse(ApiConstants.baseUrl + ApiConstants.userEndPoint);
-
     if (username.isNotEmpty && password.isNotEmpty) {
       String data = jsonEncode({"username": username, "password": password});
       try {
-        emit(UserInitial());
+        emit(UserLoading());
         http.Response response =
             await http.post(url, body: data, headers: headers);
-        emit(UserLoading());
-        final resData = await jsonDecode(response.body);
-        _token = resData["user_info"]["access"];
-        http.Response resUser = await http.get(
-          getUserUrl,
-          headers: {"Authorization": "Bearer $_token"},
-        );
+        final userData = await jsonDecode(response.body);
+        _token = userData["token"];
 
-        final userData = jsonDecode(resUser.body);
+        _expiryDate = DateTime.parse(userData['expiry']);
+
         _user = User(
-          id: userData["id"],
-          firstName: userData["first_name"],
-          lastName: userData["last_name"],
-          phoneNumber: userData["phone_number"],
+          id: userData["user"]["id"],
+          firstName: userData["user"]["first_name"],
+          lastName: userData["user"]["last_name"],
+          phoneNumber: userData["user"]["phone_number"],
           token: _token!,
-          services: userData["services"],
+          services: userData["user"]["services"],
         );
         emit(UserLogin(user: _user));
         final prefs = await SharedPreferences.getInstance();
+        Map<String, dynamic> userMainData = {
+          "token": _token,
+          "expiryDate": _expiryDate!.toIso8601String(),
+        };
 
-        prefs.setString('token', _token!);
+        prefs.setString("userMainData", jsonEncode(userMainData));
+        autoLogOut();
       } catch (e) {
         emit(
           UserError(errorMsg: e.toString()),
@@ -67,48 +73,39 @@ class UserCubit extends Cubit<UserState> {
 
   Future<void> autoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    String userToken = "";
-    final getUserUrl =
-        Uri.parse(ApiConstants.baseUrl + ApiConstants.userEndPoint);
-    if (prefs.containsKey("token")) {
-      userToken = prefs.getString("token")!;
-      http.Response resUser = await http.get(
-        getUserUrl,
-        headers: {"Authorization": "Bearer $userToken"},
+    if (!prefs.containsKey("userMainData")) {}
+    Map<String, dynamic> userMainData =
+        jsonDecode(prefs.getString("userMainData")!) as Map<String, dynamic>;
+    final expiryDate = DateTime.parse(userMainData['expiryDate']);
+    if (expiryDate.isBefore(DateTime.now())) {}
+    _token = userMainData['token'];
+    _expiryDate = expiryDate;
+  }
+
+  userLogOut() {
+    try {
+      _token = null;
+      _expiryDate = null;
+      if (_autoLogOutTimer != null) {
+        _autoLogOutTimer!.cancel();
+        _autoLogOutTimer = null;
+      }
+      emit(UserLogout());
+    } catch (e) {
+      emit(
+        UserError(
+          errorMsg: e.toString(),
+        ),
       );
-      final userData = jsonDecode(resUser.body);
-      _user = User(
-        id: userData["id"],
-        firstName: userData["first_name"],
-        lastName: userData["last_name"],
-        phoneNumber: userData["phone_number"],
-        token: userToken,
-        services: userData["services"],
-      );
-      emit(UserLogin(user: _user));
     }
   }
 
-  Future<void> userLogOut() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey("token")) {
-      prefs.setString("token", "");
+  void autoLogOut() {
+    if (_autoLogOutTimer != null) {
+      _autoLogOutTimer!.cancel();
     }
-    try {
-      _user = User(
-        id: 0,
-        firstName: "",
-        lastName: "",
-        phoneNumber: "",
-        token: "",
-        services: [],
-      );
-      _token = "";
-
-      emit(UserLogout(user: _user));
-    } catch (e) {
-      emit(UserError(errorMsg: e.toString()));
-    }
+    final finishTime = _expiryDate!.difference(DateTime.now()).inSeconds;
+    _autoLogOutTimer = Timer(Duration(seconds: finishTime), userLogOut);
   }
 
   User get user {
@@ -125,35 +122,4 @@ class UserCubit extends Cubit<UserState> {
     }
     return userNull;
   }
-
-  List<Service> get userServices {
-    User getUser = user;
-    List<Service> userServices = [];
-    for (var service in getUser.services) {
-      userServices.add(
-        Service(
-          id: service['id'],
-          fromWhere: service['from_where'],
-          toWhere: service['to_where'],
-          carType: service['car_type'],
-          servicePrice: service['service_price'],
-          phoneNumber: service['phone_number'],
-          usedId: service['user']['id'],
-          firstName: service['user']['first_name'],
-          leavingTime: service['leaving_time'],
-        ),
-      );
-    }
-    return userServices;
-  }
-
-  Service getService({required int serviceId}) {
-    List<Service> services = userServices;
-    return services.firstWhere((element) => element.id == serviceId);
-  }
-}
-
-void main(List<String> args) {
-  UserCubit userCubit = UserCubit();
-  userCubit.userLogin(username: "931634600", password: "322");
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:taxi_app/models/service.dart';
+import '../../../../models/service.dart';
 
 import '../../../../controller/cubits/service/services_cubit.dart';
 import '../../../../controller/cubits/user/user_cubit.dart';
@@ -28,15 +28,20 @@ class _AddAdvFormState extends State<AddAdvForm> {
   late String phone_number;
   late User user;
   Service? service;
+
   @override
-  void didChangeDependencies() {
+  void initState() {
+    super.initState();
     user = BlocProvider.of<UserCubit>(context).user;
     if (widget.serviceId != null) {
-      service = BlocProvider.of<UserCubit>(context)
-          .getService(serviceId: widget.serviceId!);
-      selectedDate = DateTime.parse(service!.leavingTime);
+      BlocProvider.of<ServicesCubit>(context)
+          .getService(serviceId: widget.serviceId!)
+          .then((Service resService) {
+        setState(() {
+          service = resService;
+        });
+      });
     }
-    super.didChangeDependencies();
   }
 
   void _submit() {
@@ -102,6 +107,7 @@ class _AddAdvFormState extends State<AddAdvForm> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.serviceId);
     return Form(
       key: _addAdvKey,
       child: Column(

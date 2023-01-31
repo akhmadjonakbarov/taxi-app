@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:taxi_app/controller/cubits/service/services_cubit.dart';
-import 'package:taxi_app/views/pages/adv/widgets/add_adv_form.dart';
+import 'package:taxi_app/views/pages/adv/widgets/widgets.dart';
+import '../../../../controller/cubits/service/services_cubit.dart';
 
 import '../../../../controller/cubits/user/user_cubit.dart';
 import '../../../../models/models.dart';
@@ -116,20 +116,20 @@ class ServiceItem extends StatelessWidget {
                   if (user.id == service.usedId)
                     InkWell(
                       onTap: () {
-                        showDialog(
-                          context: context,
+                        Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) {
-                            return AlertDialog(
-                              content: AddAdvForm(serviceId: service.id),
+                            return AddAdvForm(
+                              serviceId: service.id,
                             );
                           },
-                        );
+                        ));
                       },
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: const Icon(
                           Icons.edit,
                           size: 18,

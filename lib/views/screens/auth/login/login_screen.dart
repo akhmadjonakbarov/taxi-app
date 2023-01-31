@@ -7,8 +7,20 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../controller/cubits/user/user_cubit.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+  static const routeName = "/login-screen";
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void didChangeDependencies() {
+    // BlocProvider.of<UserCubit>(context).autoLogin();
+    super.didChangeDependencies();
+  }
+
   final String routeName = "/login-screen";
 
   final _loginKey = GlobalKey<FormState>();

@@ -2,20 +2,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:taxi_app/controller/cubits/service/services_cubit.dart';
+import '../../../controller/cubits/service/services_cubit.dart';
 
 import '../../../controller/cubits/user/user_cubit.dart';
 import '../../../models/models.dart';
 import '../../pages/service/widgets/widgets.dart';
 
-class UserServices extends StatefulWidget {
-  const UserServices({super.key});
+class UserServicesScreen extends StatefulWidget {
+  const UserServicesScreen({super.key});
+  static const routeNames = "/user-services-screen";
 
   @override
-  State<UserServices> createState() => _UserServicesState();
+  State<UserServicesScreen> createState() => _UserServicesScreenState();
 }
 
-class _UserServicesState extends State<UserServices> {
+class _UserServicesScreenState extends State<UserServicesScreen> {
   late User user;
 
   @override
@@ -54,10 +55,19 @@ class _UserServicesState extends State<UserServices> {
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        content: Center(
-                          child: Text(
-                            state.errorMessage.toString(),
-                          ),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              state.errorMessage.toString(),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("Ok"),
+                            )
+                          ],
                         ),
                       );
                     },

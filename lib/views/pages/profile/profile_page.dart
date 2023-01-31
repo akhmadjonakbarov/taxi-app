@@ -2,9 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../screens/screens.dart';
+
 import '../../../controller/cubits/user/user_cubit.dart';
 import '../../../models/user.dart';
+import '../../screens/screens.dart';
 
 class ManagePage extends StatelessWidget {
   const ManagePage({
@@ -13,21 +14,23 @@ class ManagePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UserCubit, UserState>(builder: (context, state) {
-      if (state is UserLogout) {
-        return LoginScreen();
-      } else if (state is UserError) {
-        return const Scaffold(
-          body: Center(
-            child: Text(
-              "Sizda xatolik bor iltimos keyinroq urunib ko'ring.",
+    return BlocBuilder<UserCubit, UserState>(
+      builder: (context, state) {
+        if (state is UserLogout) {
+          return const LoginScreen();
+        } else if (state is UserError) {
+          return const Scaffold(
+            body: Center(
+              child: Text(
+                "Sizda xatolik bor iltimos keyinroq urunib ko'ring.",
+              ),
             ),
-          ),
-        );
-      } else {
-        return const ProfilePage();
-      }
-    });
+          );
+        } else {
+          return const ProfilePage();
+        }
+      },
+    );
   }
 }
 
@@ -90,11 +93,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           InkWell(
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return const UserServices();
-                },
-              ));
+              Navigator.of(context).pushNamed(
+                UserServicesScreen.routeNames,
+              );
             },
             child: Container(
               padding: const EdgeInsets.only(left: 24, right: 24),

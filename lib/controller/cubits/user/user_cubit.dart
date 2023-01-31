@@ -20,7 +20,8 @@ class UserCubit extends Cubit<UserState> {
   Map<String, String> headers = {"content-type": "application/json"};
 
   bool get isAuth {
-    return token != null;
+    print("Token:$token");
+    return true;
   }
 
   String? get token {
@@ -30,6 +31,45 @@ class UserCubit extends Cubit<UserState> {
       return _token;
     }
     return null;
+  }
+
+  Future<void> userRegister({
+    required String name,
+    required String phoneNumber,
+    required String password,
+  }) async {
+    final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.registerEndPoint);
+    if (name.isNotEmpty && phoneNumber.isNotEmpty && password.isNotEmpty) {
+      String data = jsonEncode({
+        "first_name": name,
+        "phone_number": phoneNumber,
+        "password": password
+      });
+      try {
+        http.Response response =
+            await http.post(url, body: data, headers: headers);
+        final userData = jsonDecode(response.body);
+        _token = userData["token"]["token"];
+
+        _expiryDate = DateTime.parse(userData["token"]['expiry']);
+
+        _user = User(
+          id: userData["user"]["id"],
+          firstName: userData["user"]["first_name"],
+          lastName: "",
+          phoneNumber: userData["user"]["phone_number"],
+          token: _token!,
+          services: userData["user"]["services"],
+        );
+        emit(UserLogin(user: _user));
+      } catch (e) {
+        emit(
+          UserError(
+            errorMsg: e.toString(),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> userLogin(
@@ -80,6 +120,8 @@ class UserCubit extends Cubit<UserState> {
     if (expiryDate.isBefore(DateTime.now())) {}
     _token = userMainData['token'];
     _expiryDate = expiryDate;
+    print("User: $_user");
+    emit(UserLogin(user: _user));
   }
 
   userLogOut() {

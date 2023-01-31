@@ -12,9 +12,10 @@ class UserLogin extends UserState {
   UserLogin({required this.user});
 }
 
+class UserAuth extends UserState {}
+
 class UserLogout extends UserState {
-  final User user;
-  UserLogout({required this.user});
+  UserLogout();
 }
 
 class UserError extends UserState {

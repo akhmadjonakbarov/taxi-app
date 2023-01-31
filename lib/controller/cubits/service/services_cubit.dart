@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
 import 'package:meta/meta.dart';
 
 import '../../../models/models.dart';
@@ -15,6 +14,12 @@ part 'services_state.dart';
 
 class ServicesCubit extends Cubit<ServicesState> {
   ServicesCubit() : super(ServicesInitial());
+  Map<String, String> headers = {
+    'Server': 'WSGIServer/0.2 CPython/3.10.5',
+    'Accept': '*/*',
+    'Content-Type': 'application/json',
+    'Allow': 'POST, PATCH, DELETE, OPTIONS',
+  };
 
   Future<void> getServices() async {
     final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.serviceEndPoint);
@@ -62,15 +67,10 @@ class ServicesCubit extends Cubit<ServicesState> {
       "phone_number": phone_number,
       "car_type": "nxx",
     };
+    headers["Authorization"] = "Token $accessToken";
     try {
       http.Response response =
-          await http.post(addUrl, body: jsonEncode(body), headers: {
-        "Authorization": "Bearer $accessToken",
-        'Server': 'WSGIServer/0.2 CPython/3.10.5',
-        'Accept': '*/*',
-        'Content-Type': 'application/json',
-        'Allow': 'POST, PATCH, DELETE, OPTIONS',
-      });
+          await http.post(addUrl, body: jsonEncode(body), headers: headers);
       Map<String, dynamic> resBody = jsonDecode(response.body);
       Service service = Service(
         id: resBody['id'],
@@ -84,6 +84,7 @@ class ServicesCubit extends Cubit<ServicesState> {
         firstName: resBody['user']['first_name'],
       );
       emit(ServicesAdded(service: service));
+      filteredUserServices(userId: user.id);
     } catch (error) {
       emit(
         ServicesError(
@@ -115,15 +116,11 @@ class ServicesCubit extends Cubit<ServicesState> {
       "car_type": "nxx",
     };
 
+    headers["Authorization"] = "Token $accessToken";
+
     try {
       http.Response response =
-          await http.patch(updateUrl, body: jsonEncode(body), headers: {
-        "Authorization": "Bearer $accessToken",
-        'Server': 'WSGIServer/0.2 CPython/3.10.5',
-        'Accept': '*/*',
-        'Content-Type': 'application/json',
-        'Allow': 'POST, PATCH, DELETE, OPTIONS',
-      });
+          await http.patch(updateUrl, body: jsonEncode(body), headers: headers);
 
       Map<String, dynamic> resBody = jsonDecode(response.body);
 
@@ -155,14 +152,9 @@ class ServicesCubit extends Cubit<ServicesState> {
     List<Service> services = [];
     final deleteUrl = Uri.parse(
         "${ApiConstants.baseUrl}${ApiConstants.cudservicesEndPoint}?deleteId=$serviceId");
+    headers["Authorization"] = "Token $accessToken";
     try {
-      await http.delete(deleteUrl, headers: {
-        "Authorization": "Bearer $accessToken",
-        'Server': 'WSGIServer/0.2 CPython/3.10.5',
-        'Accept': '*/*',
-        'Content-Type': 'application/json',
-        'Allow': 'POST, PATCH, DELETE, OPTIONS',
-      });
+      await http.delete(deleteUrl, headers: headers);
 
       filteredUserServices(userId: userId);
 
@@ -260,12 +252,51 @@ class ServicesCubit extends Cubit<ServicesState> {
 
       emit(FilteresUserServices(services: userServices));
     } catch (e) {
-      emit(ServicesError(errorMessage: e.toString()));
+      emit(
+        ServicesError(
+          errorMessage: e.toString(),
+        ),
+      );
     }
+  }
+
+  Future<Service> getService({required int serviceId}) async {
+    final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.serviceEndPoint);
+    List services = [];
+    var resultService;
+    try {
+      final response = await http.get(url);
+      var data = await jsonDecode(response.body);
+      for (Map<String, dynamic> service in data) {
+        services.add(
+          Service(
+              id: service['id'],
+              fromWhere: service['from_where'],
+              toWhere: service['to_where'],
+              carType: service['car_type'],
+              servicePrice: service['service_price'],
+              phoneNumber: service['phone_number'],
+              usedId: service['user']['id'],
+              firstName: service['user']['first_name'],
+              leavingTime: service['leaving_time']),
+        );
+      }
+      for (Service service in services) {
+        if (service.id == serviceId) {
+          resultService = service;
+          break;
+        }
+      }
+    } catch (e) {
+      rethrow;
+    }
+    return resultService;
   }
 }
 
 void main(List<String> args) {
   ServicesCubit servicesCubit = ServicesCubit();
-  servicesCubit.getServices();
+  servicesCubit
+      .getService(serviceId: 8)
+      .then((value) => print(value.leavingTime));
 }

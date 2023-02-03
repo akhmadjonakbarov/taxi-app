@@ -76,7 +76,23 @@ class _ServicePageState extends State<ServicePage> {
               child: BlocBuilder<ServicesCubit, ServicesState>(
                 builder: (context, state) {
                   if (state is ServicesLoading) {
-                    return const CircularProgressIndicator();
+                    return Center(
+                      child: Container(
+                        decoration: const BoxDecoration(),
+                        width: 150,
+                        height: 150,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(),
+                            Text(
+                              "Loading...",
+                              style: GoogleFonts.nunito(fontSize: 20),
+                            )
+                          ],
+                        ),
+                      ),
+                    );
                   } else if (state is ServicesLoaded) {
                     if (state.services.isNotEmpty) {
                       return Column(

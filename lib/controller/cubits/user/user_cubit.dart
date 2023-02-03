@@ -61,7 +61,9 @@ class UserCubit extends Cubit<UserState> {
           token: _token!,
           services: userData["user"]["services"],
         );
-        emit(UserLogin(user: _user));
+        emit(
+          UserLogin(user: _user),
+        );
       } catch (e) {
         emit(
           UserError(
@@ -72,15 +74,27 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<void> userLogin(
-      {required String username, required String password}) async {
-    final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.loginEndPoint);
+  Future<void> userLogin({
+    required String username,
+    required String password,
+  }) async {
+    final url = Uri.parse(
+      ApiConstants.baseUrl + ApiConstants.loginEndPoint,
+    );
     if (username.isNotEmpty && password.isNotEmpty) {
-      String data = jsonEncode({"username": username, "password": password});
+      String data = jsonEncode(
+        {
+          "username": username,
+          "password": password,
+        },
+      );
       try {
         emit(UserLoading());
-        http.Response response =
-            await http.post(url, body: data, headers: headers);
+        http.Response response = await http.post(
+          url,
+          body: data,
+          headers: headers,
+        );
         final userData = await jsonDecode(response.body);
         _token = userData["token"];
 
@@ -98,6 +112,11 @@ class UserCubit extends Cubit<UserState> {
         final prefs = await SharedPreferences.getInstance();
         Map<String, dynamic> userMainData = {
           "token": _token,
+          "userId": userData["user"]["id"],
+          "firstName": userData["user"]["first_name"],
+          "lastName": userData["user"]["last_name"],
+          "phoneNumber": userData["user"]["phone_number"],
+          "services": userData["user"]["services"],
           "expiryDate": _expiryDate!.toIso8601String(),
         };
 
@@ -113,18 +132,29 @@ class UserCubit extends Cubit<UserState> {
 
   Future<void> autoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey("userMainData")) {}
-    Map<String, dynamic> userMainData =
-        jsonDecode(prefs.getString("userMainData")!) as Map<String, dynamic>;
-    final expiryDate = DateTime.parse(userMainData['expiryDate']);
-    if (expiryDate.isBefore(DateTime.now())) {}
-    _token = userMainData['token'];
-    _expiryDate = expiryDate;
-    print("User: $_user");
-    emit(UserLogin(user: _user));
+    if (prefs.containsKey("userMainData")) {
+      Map<String, dynamic> userMainData =
+          jsonDecode(prefs.getString("userMainData")!) as Map<String, dynamic>;
+      final expiryDate = DateTime.parse(userMainData['expiryDate']);
+      if (!expiryDate.isBefore(DateTime.now())) {
+        _token = userMainData['token'];
+        _expiryDate = expiryDate;
+        emit(UserLoading());
+
+        _user = User(
+          id: userMainData['userId'],
+          firstName: userMainData['firstName'],
+          lastName: userMainData['lastName'],
+          phoneNumber: userMainData['phoneNumber'],
+          token: userMainData['token'],
+          services: userMainData['services'],
+        );
+        emit(UserLogin(user: _user));
+      }
+    }
   }
 
-  userLogOut() {
+  userLogOut() async {
     try {
       _token = null;
       _expiryDate = null;
@@ -133,6 +163,8 @@ class UserCubit extends Cubit<UserState> {
         _autoLogOutTimer = null;
       }
       emit(UserLogout());
+      final prefs = await SharedPreferences.getInstance();
+      prefs.clear();
     } catch (e) {
       emit(
         UserError(

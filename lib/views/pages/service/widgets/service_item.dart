@@ -49,7 +49,8 @@ class ServiceItem extends StatelessWidget {
                       children: [
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).errorColor),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.error),
                           onPressed: () {
                             BlocProvider.of<ServicesCubit>(context)
                                 .deleteService(

@@ -36,19 +36,18 @@ class Wrapper extends StatefulWidget {
 }
 
 class _WrapperState extends State<Wrapper> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(
-      const Duration(
-        seconds: 3,
-      ),
-    ).then((value) {});
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   Future.delayed(
+  //     Duration.zero,
+  //   ).then((value) {});
+  // }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UserCubit, UserState>(
+      bloc: context.read<UserCubit>()..autoLogin(),
       builder: (context, state) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,

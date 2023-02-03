@@ -263,7 +263,7 @@ class ServicesCubit extends Cubit<ServicesState> {
   Future<Service> getService({required int serviceId}) async {
     final url = Uri.parse(ApiConstants.baseUrl + ApiConstants.serviceEndPoint);
     List services = [];
-    var resultService;
+    late var resultService;
     try {
       final response = await http.get(url);
       var data = await jsonDecode(response.body);
@@ -292,11 +292,4 @@ class ServicesCubit extends Cubit<ServicesState> {
     }
     return resultService;
   }
-}
-
-void main(List<String> args) {
-  ServicesCubit servicesCubit = ServicesCubit();
-  servicesCubit
-      .getService(serviceId: 8)
-      .then((value) => print(value.leavingTime));
 }

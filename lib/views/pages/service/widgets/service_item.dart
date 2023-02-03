@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:taxi_app/views/pages/adv/widgets/widgets.dart';
+import 'package:taxi_app/views/screens/screens.dart';
 import '../../../../controller/cubits/service/services_cubit.dart';
 
 import '../../../../controller/cubits/user/user_cubit.dart';
@@ -117,13 +118,9 @@ class ServiceItem extends StatelessWidget {
                   if (user.id == service.usedId)
                     InkWell(
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) {
-                            return AddAdvForm(
-                              serviceId: service.id,
-                            );
-                          },
-                        ));
+                        Navigator.of(context).pushNamed(
+                            ManageServiceScreen.routeName,
+                            arguments: service);
                       },
                       borderRadius: BorderRadius.circular(16),
                       child: Container(

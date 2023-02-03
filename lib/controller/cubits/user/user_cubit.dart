@@ -20,7 +20,6 @@ class UserCubit extends Cubit<UserState> {
   Map<String, String> headers = {"content-type": "application/json"};
 
   bool get isAuth {
-    print("Token:$token");
     return true;
   }
 

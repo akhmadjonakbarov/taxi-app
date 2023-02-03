@@ -95,6 +95,8 @@ class _WrapperState extends State<Wrapper> {
                 const UserServicesScreen(),
             LoginScreen.routeName: (context) => const LoginScreen(),
             RegisterScreen.routeName: (context) => RegisterScreen(),
+            ManageServiceScreen.routeName: (context) =>
+                const ManageServiceScreen()
           },
         );
       },

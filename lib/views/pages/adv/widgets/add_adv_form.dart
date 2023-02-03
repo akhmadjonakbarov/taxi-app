@@ -107,7 +107,6 @@ class _AddAdvFormState extends State<AddAdvForm> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.serviceId);
     return Form(
       key: _addAdvKey,
       child: Column(
